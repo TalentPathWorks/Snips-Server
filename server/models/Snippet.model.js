@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 const shortid = require('shortid');
 const { readJsonFromFile, writeJsonFromFile } = require('../utils/db.utils.js');
 /**
@@ -55,22 +56,34 @@ exports.select = async (query = {}) => {
     throw err;
   }
 };
-/* Update */
-exports.update = async (id, query) => {
-  const snippet = await readJsonFromFile('snippets');
-  const newSnippet = snippet.map(snip => {
-    // CODE
+/**
+ * Updates a snippet in the file
+ * @param {string} id Id for the snippet to be updated
+ * @param {Snippet} newData subset of values
+ */
+exports.update = async (id, newData) => {
+  const snippets = await readJsonFromFile('snippets');
+  const updatedSnippet = snippets.map(snippet => {
+    if (snippet.id !== id) return snippet;
+    Object.keys(newData).forEach(key => {
+      if (key in snippet) snippet[key] = newData[key];
+    });
+    return snippet;
   });
-  return writeJsonFromFile('snippets', newSnippet);
+  return writeJsonFromFile('snippets', updatedSnippet);
 };
 /**
+ * Deletes a snippet from the file
+ * @param {string} id id of the snippet to be deleted
  *
  */
 exports.delete = async id => {
   // Filter snippets for everything except snippet.id === id
-  const snippet = await readJsonFromFile('snippets');
-  const newSnippet = snippet.filter(snip => {
-    if (snip.id !== id) return snip;
-  });
+  const snippets = await readJsonFromFile('snippets');
+  const newSnippet = snippets.filter(snip => snip.id !== id);
+
+  if (newSnippet.length === snippets.length) {
+  }
+
   return writeJsonFromFile('snippets', newSnippet);
 };
