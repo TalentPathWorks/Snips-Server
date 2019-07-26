@@ -8,6 +8,7 @@ async function logger(request, response, next) {
     );
   } catch (err) {
     console.error(err);
+    throw err;
   } finally {
     next();
   }

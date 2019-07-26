@@ -1,32 +1,14 @@
 const express = require('express');
-const controller = require('../models/Snippet.model.js');
+const snippets = require('../controllers/snippets.controller.js');
 
 const router = express.Router();
 
 router.get('/', (request, response) => {
-  console.log('WE IN ROUTER;')
-  response.end('HELLO');
+  response.end('Welcome to Snips home route!');
 });
-router.get('/api/snippets', async (request, response) => {
-  const snippets = await controller.select();
-  response.status(200).send(snippets);
-});
-router.get('/api/snippets/:id', async (request, response) => {
-  const { id } = request.params;
-  const snippet = await controller.select({ id: `${id}` });
-  response.send(snippet);
-});
-router.post('/api/snippets', (request, response) => {
-  // Something happens
-});
-router.patch('/api/snippets/:id', async (request, response) => {
-  const { id } = request.params;
-  const snippet = await controller.update();
-  response.send(snippet);
-});
-router.delete('/api/snippets/:id', async (request, response) => {
-  const { id } = request.params;
-  const snippet = await controller.delete({ id: `${id}` });
-  response.send(snippet);
-});
+router.get('/api/snippets', snippets.getAllSnippets);
+router.post('/api/snippets', snippets.createSnippet);
+router.get('/api/snippets/:id', snippets.getSnippetByID);
+router.patch('/api/snippets/:id', snippets.updateSnippet);
+router.delete('/api/snippets/:id', snippets.deleteSnippet);
 module.exports = router;

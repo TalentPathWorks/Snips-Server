@@ -1,6 +1,8 @@
 /* eslint-disable no-prototype-builtins */
 const shortid = require('shortid');
 const { readJsonFromFile, writeJsonFromFile } = require('../utils/db.utils.js');
+const ErorrWithHTTPStatus = require('../utils/ErrorWithHttpStatus');
+
 /**
  * @typedef {Object} Snippet
  * @property {string} id
@@ -20,7 +22,10 @@ const { readJsonFromFile, writeJsonFromFile } = require('../utils/db.utils.js');
 exports.insert = async ({ author, code, title, description, language }) => {
   try {
     if (!author || !code || !title || !description || !language) {
-      throw new Error('Missing Parameters when inserting into database.');
+      throw new ErorrWithHTTPStatus(
+        'Missing Parameters when inserting into database.',
+        500
+      );
     }
     const snippets = await readJsonFromFile('snippets');
     // generate default data
@@ -37,7 +42,10 @@ exports.insert = async ({ author, code, title, description, language }) => {
     writeJsonFromFile('snippets', snippets);
     return snippets[snippets.length - 1];
   } catch (err) {
-    throw err;
+    if (err instanceof ErorrWithHTTPStatus) throw err;
+    else {
+      throw new ErorrWithHTTPStatus('Could not read from file', 500);
+    }
   }
 };
 /**
@@ -62,15 +70,19 @@ exports.select = async (query = {}) => {
  * @param {Snippet} newData subset of values
  */
 exports.update = async (id, newData) => {
-  const snippets = await readJsonFromFile('snippets');
-  const updatedSnippet = snippets.map(snippet => {
-    if (snippet.id !== id) return snippet;
-    Object.keys(newData).forEach(key => {
-      if (key in snippet) snippet[key] = newData[key];
+  try {
+    const snippets = await readJsonFromFile('snippets');
+    const updatedSnippets = snippets.map(snippet => {
+      if (snippet.id !== id) return snippet;
+      Object.keys(newData).forEach(key => {
+        if (key in snippet) snippet[key] = newData[key];
+      });
+      return snippet;
     });
-    return snippet;
-  });
-  return writeJsonFromFile('snippets', updatedSnippet);
+    return writeJsonFromFile('snippets', updatedSnippets);
+  } catch (err) {
+    throw err;
+  }
 };
 /**
  * Deletes a snippet from the file
@@ -78,12 +90,14 @@ exports.update = async (id, newData) => {
  *
  */
 exports.delete = async id => {
-  // Filter snippets for everything except snippet.id === id
-  const snippets = await readJsonFromFile('snippets');
-  const newSnippet = snippets.filter(snip => snip.id !== id);
-
-  if (newSnippet.length === snippets.length) {
+  try {
+    const snippets = await readJsonFromFile('snippets');
+    // filter snippets for everything except snippet.id
+    const filteredSnips = snippets.filter(snippet => snippet.id !== id);
+    if (filteredSnips.length === snippets.length) return; // short circuit if id DNE
+    // write the file
+    return writeJsonFromFile('snippets', filteredSnips);
+  } catch (err) {
+    throw err;
   }
-
-  return writeJsonFromFile('snippets', newSnippet);
 };
