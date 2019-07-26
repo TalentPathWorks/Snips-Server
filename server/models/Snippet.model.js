@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 const shortid = require('shortid');
 const { readJsonFromFile, writeJsonFromFile } = require('../utils/db.utils.js');
-const ErorrWithHTTPStatus = require('../utils/ErrorWithHttpStatus');
+const ErrorWithHttpStatus = require('../utils/ErrorWithHttpStatus');
 
 /**
  * @typedef {Object} Snippet
@@ -22,7 +22,7 @@ const ErorrWithHTTPStatus = require('../utils/ErrorWithHttpStatus');
 exports.insert = async ({ author, code, title, description, language }) => {
   try {
     if (!author || !code || !title || !description || !language) {
-      throw new ErorrWithHTTPStatus(
+      throw new ErrorWithHttpStatus(
         'Missing Parameters when inserting into database.',
         500
       );
@@ -42,10 +42,7 @@ exports.insert = async ({ author, code, title, description, language }) => {
     writeJsonFromFile('snippets', snippets);
     return snippets[snippets.length - 1];
   } catch (err) {
-    if (err instanceof ErorrWithHTTPStatus) throw err;
-    else {
-      throw new ErorrWithHTTPStatus('Could not read from file', 500);
-    }
+    throw err;
   }
 };
 /**
@@ -75,11 +72,17 @@ exports.update = async (id, newData) => {
     const updatedSnippets = snippets.map(snippet => {
       if (snippet.id !== id) return snippet;
       Object.keys(newData).forEach(key => {
-        if (key in snippet) snippet[key] = newData[key];
+        if (key in snippet) {
+          snippet[key] = newData[key];
+        } else {
+          throw new ErrorWithHttpStatus('Mismatch Keys', 400);
+        }
       });
       return snippet;
     });
-    return writeJsonFromFile('snippets', updatedSnippets);
+
+    writeJsonFromFile('snippets', updatedSnippets);
+    return 'Snippets Updated.';
   } catch (err) {
     throw err;
   }
@@ -92,10 +95,11 @@ exports.update = async (id, newData) => {
 exports.delete = async id => {
   try {
     const snippets = await readJsonFromFile('snippets');
-    // filter snippets for everything except snippet.id
     const filteredSnips = snippets.filter(snippet => snippet.id !== id);
-    if (filteredSnips.length === snippets.length) return; // short circuit if id DNE
-    // write the file
+    // Don't update the DB if nothing has been deleted
+    if (filteredSnips.length === snippets.length) {
+      throw new ErrorWithHttpStatus(`No ID matched. Nothing was deleted.`, 404);
+    }
     return writeJsonFromFile('snippets', filteredSnips);
   } catch (err) {
     throw err;
