@@ -1,6 +1,8 @@
 const Snippet = require('../models/Snippet.model.js');
 const ErrorWithHTTPStatus = require('../utils/ErrorWithHttpStatus');
-// TODO: Add error handling
+/**
+ *
+ */
 exports.createSnippet = async (request, response, next) => {
   try {
     const snippet = await Snippet.insert(request.body);
@@ -9,7 +11,9 @@ exports.createSnippet = async (request, response, next) => {
     next(err);
   }
 };
-
+/**
+ *
+ */
 exports.getAllSnippets = async (request, response, next) => {
   try {
     const snippets = await Snippet.select(request.query);
@@ -24,7 +28,9 @@ exports.getAllSnippets = async (request, response, next) => {
     next(err);
   }
 };
-
+/**
+ *
+ */
 exports.getSnippetByID = async (request, response, next) => {
   try {
     const { id } = request.params;
@@ -37,7 +43,9 @@ exports.getSnippetByID = async (request, response, next) => {
     next(err);
   }
 };
-
+/**
+ *
+ */
 exports.updateSnippet = async (request, response, next) => {
   try {
     const { id } = request.params;
@@ -48,7 +56,9 @@ exports.updateSnippet = async (request, response, next) => {
     next(err);
   }
 };
-
+/**
+ *
+ */
 exports.deleteSnippet = async (request, response, next) => {
   try {
     const { id } = request.params;
