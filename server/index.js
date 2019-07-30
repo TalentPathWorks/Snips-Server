@@ -14,5 +14,5 @@ app.use(errorHandler);
 
 /* Start Server */
 app.listen(process.env.PORT || PORT, () => {
-  console.log('Snips server running on port ${PORT}');
+  console.log(`Snips server running on port ${PORT}`);
 });
