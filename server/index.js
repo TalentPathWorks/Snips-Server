@@ -13,6 +13,6 @@ app.use(router);
 app.use(errorHandler);
 
 /* Start Server */
-app.listen(PORT, () => {
-  console.log(`Snips server is running on port: ${PORT}`);
+app.listen(process.env.PORT || PORT, () => {
+  console.log('Snips server running on port ${PORT}');
 });
