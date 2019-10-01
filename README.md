@@ -16,7 +16,7 @@
 
 ## Known Bugs
 
-[Coming Soon]
+Some bugs
 
 ## Built With
 
